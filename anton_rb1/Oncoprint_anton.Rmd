@@ -1,0 +1,133 @@
+```{r Packages}
+require(tidyverse)
+require(ComplexHeatmap)
+```
+
+```{r Data}
+SNV <- read.delim("~/Desktop/Projects/Anton_RB1/data/table.tsv")
+SV <- read.delim("~/Desktop/Projects/Anton_RB1/data/SV.tsv")
+CNA <- read.delim("~/Desktop/Projects/Anton_RB1/data/CNA.tsv")
+SNV=SNV |> mutate(Samples = case_when(
+  Samples == 'P-0019631-T01-IM6' ~ 'IMPACT #1', 
+  Samples == 'P-0019631-T03-IM6' ~ 'IMPACT #3', 
+  Samples == 'P-0019631-T02-IM6' ~ 'IMPACT #2', 
+  Samples == 'P-0019631-T05-XS1' ~ 'ACCESS #4',
+  Samples == 'P-0019631-T06-XS1' ~ 'ACCESS #5',
+  .default = NA
+))
+CNA= CNA |>  mutate(Samples = case_when(
+  Samples == 'P-0019631-T01-IM6' ~ 'IMPACT #1', 
+  Samples == 'P-0019631-T03-IM6' ~ 'IMPACT #3', 
+  Samples == 'P-0019631-T02-IM6' ~ 'IMPACT #2', 
+  Samples == 'P-0019631-T05-XS1' ~ 'ACCESS #4',
+  Samples == 'P-0019631-T06-XS1' ~ 'ACCESS #5',
+  .default = NA
+))
+CNA=CNA|> mutate(Gene = if_else(str_detect(Cytoband, '12q24'), '12q24 Amplicon', Gene))
+
+
+```
+
+
+
+```{r Oncoprint}
+df = SNV
+df=df |> select(Gene, Samples, Mutation.Type)
+CNA=CNA |> select(Samples, Gene, `Mutation.Type` = CNA)
+df = rbind(df, CNA)
+df=df |> mutate(Mutation.Type = case_when(
+  Mutation.Type == 'AMP' ~ 'Amplification', 
+  Mutation.Type == 'DeepDel' ~ 'Deletion', 
+  Mutation.Type == 'Frame_Shift_Del' ~ 'Truncating_driver', 
+  Mutation.Type == 'In_Frame_Del' ~ 'Inframe_driver', 
+  Mutation.Type == 'Missense_Mutation' ~ 'Missense_driver', 
+  Mutation.Type == 'Nonsense_Mutation' ~ 'Truncating_driver', 
+  Mutation.Type == 'Splice_Site' ~ 'Splice_driver', 
+))
+df=df |> mutate(Gene = ifelse(is.na(Gene), '', Gene),
+                Mutation.Type = ifelse(is.na(Mutation.Type), '', Mutation.Type))
+df=df |>  mutate(Samples = factor(Samples,
+                          levels = c("IMPACT #1", "IMPACT #2", "IMPACT #3",
+                                     "ACCESS #4", "ACCESS #5"))) |>  arrange(Samples)
+
+df=df %>%
+  pivot_wider(names_from = Samples, 
+              values_from = Mutation.Type, values_fn = 
+                list(Mutation.Type = function(x) paste(x, collapse = ";"))) #to account for multiple data
+
+df =df|> filter(Gene != '')
+df = as.matrix(df)
+rownames(df) = df[,1]
+df=df = df[,-1]
+
+col = c("Amplification" = "red", "Deletion" = "blue", "Inframe_driver" = "brown4", "Missense_driver" =  "darkgreen", "Splice_driver" = "darkorange1", "Truncating_driver" = "black", "Fusion" = "mediumorchid1")
+
+alter_fun = list(
+background = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h-unit(2, "pt"),
+      gp = gpar(fill = "#CCCCCC", col = NA))
+},
+ Amplification = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h-unit(2, "pt"),
+      gp = gpar(fill = col["Amplification"], col = NA))
+},
+  Deletion = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h-unit(2, "pt"),
+      gp = gpar(fill = col["Deletion"], col = NA))
+},
+  Inframe_driver = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h*0.33,
+      gp = gpar(fill = col["Inframe_driver"], col = NA))
+},
+  Missense_driver = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h*0.33,
+      gp = gpar(fill = col["Missense_driver"], col = NA))
+},
+  Splice_driver = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h*0.33,
+      gp = gpar(fill = col["Splice_driver"], col = NA))
+},
+  Truncating_driver = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h*0.33,
+      gp = gpar(fill = col["Truncating_driver"], col = NA))
+},
+  Fusion = function(x, y, w, h) {
+   grid.rect(x, y, w-unit(2, "pt"), h*0.33,
+      gp = gpar(fill = col["Fusion"], col = NA))
+  }
+)
+
+
+gene_rows <- rownames(df)
+
+
+
+oncoprint = oncoPrint(df, 
+                      alter_fun = alter_fun, 
+                      col = col,
+                      remove_empty_columns = F,
+                      remove_empty_rows = F,
+                      top_annotation = NULL,
+                      right_annotation = NULL,
+                      pct_side = "right",
+                      show_pct = FALSE,  
+                      column_order = c("IMPACT #1", "IMPACT #2", "IMPACT #3",
+                                       "ACCESS #4", "ACCESS #5"),
+                      row_order = c("BRCA2", "RB1", setdiff(rownames(df), c("BRCA2", "RB1"))),
+                      show_column_names = TRUE,
+                      row_names_gp = gpar(
+                        col = ifelse(gene_rows %in% c("BRCA2", "RB1"), "red", "black"),
+                        fontface = ifelse(gene_rows %in% c("BRCA2", "RB1"), "bold", "plain")
+                        ),
+                      column_names_gp = gpar(fontface = "bold"),
+                      row_names_side = 'left');oncoprint
+
+
+```
+
+```{r Save}
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/oncoprint.pdf', height = 4.4, width = 4)
+draw(oncoprint)
+dev.off()
+```
+

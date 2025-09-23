@@ -1,0 +1,572 @@
+```{r}
+require(tidyverse)
+require(ggrepel)
+```
+
+
+
+
+```{r simmetric forest plot}
+### ATM
+
+
+sm.log.results.c <- read.csv("~/Desktop/Projects/Anton_RB1/data/Fig1b_ATM 1.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm
+
+
+###BRCA2
+
+
+
+
+sm.log.results.c <- read.csv("~/Desktop/Projects/Anton_RB1/data/Fig1b_BRCA2 1.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Variant = ifelse(Somatic.Variant %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Variant)
+  ) |> 
+  group_by(Somatic.Variant) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Variant = if_else(q.value < 0.1, Somatic.Variant, NA))
+sig.label.atm <- sm.log.results.c 
+
+
+brca2 = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+   scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab('') + 
+  ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Variant),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position  = 'none',
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );brca2
+
+
+
+### BRCA1
+
+
+
+sm.log.results.c <- read.csv('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Fig1b_BRCA1 1.csv')
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+brca1 = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab('') + 
+  ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none',
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );brca1
+
+
+###BRCA2_ER
+
+
+
+sm.log.results.c <- read.csv('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Fig1b_BRCA2_ER 2.csv')
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Variant = ifelse(Somatic.Variant %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Variant)
+  ) |> 
+  group_by(Somatic.Variant) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Variant = if_else(q.value < 0.1, Somatic.Variant, NA))
+sig.label.atm <- sm.log.results.c 
+
+
+brca2_er = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab('') + 
+  ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Variant),
+  size = 4, nudge_y = 0.5, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none',
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );bcra2_er
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/volcanos.svg', height = 4.4, width = 18)
+(atm + brca1 + brca2 + patchwork::plot_spacer() + brca2_er) +
+  patchwork::plot_layout(ncol = 5, widths = c(1, 1, 1, 0.1, 1))
+dev.off()
+
+
+```
+
+
+```{r Legend}
+sm.log.results.c <- read.csv('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Fig1b_BRCA2_ER 2.csv')
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Variant = ifelse(Somatic.Variant %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Variant)
+  ) |> 
+  group_by(Somatic.Variant) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Variant = if_else(q.value < 0.1, Somatic.Variant, NA))
+sig.label.atm <- sm.log.results.c 
+
+
+brca2_er = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab('') + 
+  ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Variant),
+  size = 4, nudge_y = 0.5, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );bcra2_er
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/volcanos_legend.svg', height = 4.4, width = 6)
+brca2_er
+dev.off()
+
+```
+
+```{r non simmetric forest plot}
+### ATM
+sm.log.results.c <- read.csv("~/Desktop/Projects/Anton_RB1/data/Fig1b_ATM 1.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm
+
+
+###BRCA2
+sm.log.results.c <- read.csv("~/Desktop/Projects/Anton_RB1/data/Fig1b_BRCA2 1.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Variant = ifelse(Somatic.Variant %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Variant)
+  ) |> 
+  group_by(Somatic.Variant) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Variant = if_else(q.value < 0.1, Somatic.Variant, NA))
+sig.label.atm <- sm.log.results.c 
+
+
+brca2 = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+   scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab('') + 
+  ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Variant),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position  = 'none',
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );brca2
+
+
+
+### BRCA1
+sm.log.results.c <- read.csv('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Fig1b_BRCA1 1.csv')
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+brca1 = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-3.5, 3.5), 
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab('') + 
+  ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none',
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );brca1
+
+
+###BRCA2_ER
+sm.log.results.c <- read.csv('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Fig1b_BRCA2_ER 2.csv')
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Variant = ifelse(Somatic.Variant %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Variant)
+  ) |> 
+  group_by(Somatic.Variant) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Variant = if_else(q.value < 0.1, Somatic.Variant, NA))
+sig.label.atm <- sm.log.results.c 
+
+
+brca2_er = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-2.5, 2.5), 
+                     breaks = c(-2, -2, -1, 0, 1, 2)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 7.7), 
+                     breaks = seq(1, 9, 2)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab('') + 
+  ggtitle("") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Variant),
+  size = 4, nudge_y = 0.5, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none',
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );brca2_er
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/volcanos.svg', height = 4.4, width = 18)
+(atm + brca1 + brca2 + patchwork::plot_spacer() + brca2_er) +
+  patchwork::plot_layout(ncol = 5, widths = c(1, 1, 1, 0.1, 1))
+dev.off()
+
+
+```
