@@ -1,0 +1,3637 @@
+```{r}
+require(tidyverse)
+require(ggrepel)
+require(patchwork)
+```
+
+ 
+
+
+```{r ATM}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_ATM1_all.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gATM cases") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_ATM_all_bi.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gATM cases (biallelic loss)") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_ATM_all_bi.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gATM cases (biallelic loss)") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+```
+
+
+
+```{r ATM legend}
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_ATM_all_bi.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+legend = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gATM cases (biallelic loss)") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 20, fontface = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 20)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+     
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );legend
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/atm_legend.svg', height = 4.4, width = 5)
+legend
+dev.off()
+```
+
+```{r brca1 all}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_all.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA1 cases", subtitle = 'All-comers') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_all_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_all_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca1_all.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+############Legend
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_all_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_all_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_all.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA1 cases", subtitle = 'All-comers') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca1_all_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+```
+
+
+
+```{r brca1 er}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_er.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA1 HR+/HER2− cases", subtitle = "All-comers") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_er_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Biallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_er_uni.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Monoallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca1_er.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+
+
+
+
+######### LEGEND
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_er.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA1 HR+/HER2− cases", subtitle = "All-comers") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_er_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Biallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_er_uni.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Monoallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca1_er_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+```
+
+
+```{r brca1 tnbc}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_tn.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA1 TNBC cases", subtitle = "All-comers") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_tn_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Biallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_tn_uni.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Monoallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca1_tnbc.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+
+
+
+####### LEGEND
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_tn.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA1 TNBC cases", subtitle = "All-comers") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_tn_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Biallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA1_tn_uni.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = "Monoallelic loss") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca1_tnbc_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+```
+
+
+
+
+```{r brca2 all}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA2 cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all_bi.csv")
+# sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca2_all.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+############Legend
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA2 cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all_bi.csv")
+# sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca2_all_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+```
+
+
+```{r brca2 er}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA2 HR+/HER2- cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_er_bi.csv")
+# sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_er_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca2_er.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+############Legend
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA2 HR+/HER2- cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_er_bi.csv")
+# sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_er_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca2_er_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+```
+
+
+```{r brca2 er}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_tn.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA2 TNBC cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_tn_bi.csv")
+# sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_tn_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca2_tnbc.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+############Legend
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_tn.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gBRCA2 TNBC cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_tn_bi.csv")
+# sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_tn_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 8), 
+                     breaks = seq(1, 8, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.6, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/brca2_tnbc_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+```
+
+
+
+```{r CHEK2 all}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_all.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gCHEK2 cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_all_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_all_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/check2_all.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+
+
+
+###### LEGEND
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_all.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gCHEK2 cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_all_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_all_uni.csv")
+sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/chek2_all_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+
+
+
+```
+
+
+```{r CHEK2 er}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_er.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gCHEK2 HR+/HER2- cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_er_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_er_uni.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/check2_er.pdf', height = 4.4, width = 14)
+(atm_all + atm_bi + atm_uni) + patchwork::plot_layout(ncol = 3, widths = c(1, 1, 1))
+dev.off()
+
+
+
+
+
+
+
+
+
+###### LEGEND
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_er.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gCHEK2 HR+/HER2- cases", subtitle = 'Overall cohort') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_er_bi.csv")
+sm.log.results.c$q.value = if_else(sm.log.results.c$q.value == 0.000, 0.0001, sm.log.results.c$q.value)
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Biallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_bi
+
+
+
+
+
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_chek2_er_uni.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("", subtitle = 'Monoallelic loss') +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+        plot.title = element_text(hjust = 0.5, size = 24), plot.subtitle = element_text(hjust = 0.5, size = 18)) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+      legend.position = 'none', 
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_uni
+
+
+
+
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/chek2_er_legend.pdf', height = 4.5, width = 16)
+(atm_bi + atm_uni + atm_all) + patchwork::plot_layout(ncol = 3, widths = c(0.1, 0.1, 0.1))
+dev.off()
+
+
+
+
+
+```
+
+
+
+
+
+
+```{r gPALB2}
+
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_palb2_all.csv")
+sm.log.results.c=sm.log.results.c |> 
+  mutate(
+    Somatic.Mutation = ifelse(Somatic.Mutation %in% c('CCND1', 'FGF4', 'FGF19', 'FGF3'), "11q13", Somatic.Mutation)
+  ) |> 
+  group_by(Somatic.Mutation) |> 
+  summarise(
+    OR = mean(OR),                                # average
+    Conf.Int.1 = mean(Conf.Int.1),
+    Conf.Int.2 = mean(Conf.Int.2),
+    p.value = mean(p.value),
+    q.value = mean(q.value),
+    freq = mean(freq),
+    num.coaltered.with.GL = mean(num.coaltered.with.GL),
+    OR.univariate = mean(OR.univariate),
+    .groups = "drop"
+  )
+
+sm.log.results.c <- sm.log.results.c[order(sm.log.results.c$p.value),]
+sm.log.results.c <- sm.log.results.c %>% mutate(Significant = case_when(q.value < 0.10 ~ "Yes", TRUE ~ "No")) %>% mutate(Significant = as.factor(Significant))
+sm.log.results.c=sm.log.results.c |> mutate(log2OR = log2(OR)) |> relocate(log2OR, .after = OR)
+sm.log.results.c=sm.log.results.c |> mutate(Somatic.Mutation = case_when(
+  q.value < 0.1 ~Somatic.Mutation, 
+  # Somatic.Mutation == 'RB1' ~ Somatic.Mutation, 
+  .default = NA
+  ))
+sig.label.atm <- sm.log.results.c 
+
+
+atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Significant, size = freq)) + geom_point(alpha = 0.4) +
+  scale_x_continuous(limits = c(-4.5, 4.5), 
+                     breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
+                     #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
+                     )+
+  scale_y_continuous(limits = c(0, 5), 
+                     breaks = seq(1, 5, 1)
+                    ) +
+  xlab(expression(log[2]('Odds ratio'))) +
+  ylab(expression(-log[10]('q value'))) + 
+   ggtitle("Somatic variants enriched in gPALB2 cases") +
+ geom_text_repel(
+  data = sig.label.atm,
+  aes(x = log2(OR), y = -log10(q.value), label = Somatic.Mutation),
+  size = 4, nudge_y = 0.4, color = "black"
+) + 
+  geom_vline(xintercept = 0, color = "red") +
+  geom_hline(yintercept = -log10(0.1), linetype = "dashed") +
+  theme(axis.title.x = element_text(size = 18), axis.title.y = element_text(size=18),
+        axis.text.x = element_text(size = 16), axis.text.y = element_text(size=16), 
+          plot.title = element_text(hjust = 0.5, size = 20, face = 'bold'), plot.subtitle = element_text(hjust = 0.5, size = 24, face = 'bold')) +
+  scale_size(range = c(1, 10), name="Frequency (%)") + 
+  scale_color_manual(values = c("Yes" = "blue", "No" = "gray45")) +
+  theme_bw() + 
+    theme(
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  );atm_all 
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/volcanos_supplementary/palb2.pdf', height = 4.5, width = 6)
+atm_all
+dev.off()
+
+
+
+```
+
