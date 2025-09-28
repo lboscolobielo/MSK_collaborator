@@ -1,0 +1,110 @@
+
+```{r Packages}
+require(tidyverse)
+require(survival)
+require(survminer)
+```
+```{r Data}
+cdk1 <- read.csv("~/Desktop/Projects/Anton_RB1/data/KMs/cdk_1L_share_for_PFS_OS.csv")
+cdk1=cdk1 |> mutate(LOH = str_squish(LOH))
+```
+
+```{r}
+table(cdk1$LOH)
+```
+
+```{r}
+cdk1 |> filter(is.na(time.months))
+```
+
+
+```{r ### PFS}
+cdk1 = cdk1 |> mutate(LOH = factor(LOH, levels = c('LOH', 'No_LOH')))
+cdk_km_loh <- survfit(Surv(time.months, pfs.event) ~ LOH, data = cdk1)
+cdk_loh.plot <- ggsurvplot(cdk_km_loh,
+                           risk.table= TRUE, 
+                           tables.height = 0.35,
+                           tables.theme = theme_cleantable(),
+                           censor = TRUE,
+                           palette = c("#e95298", "#3db54a"),
+                           break.time.by = 12,
+                           fontsize = 4,
+                           axes.offset = FALSE,
+                           xlab = "Time (mo)",
+                           xlim = c(0,61.5),
+                           legend='none', 
+                           risk.table.legend = FALSE,
+                           legend.labs = c("LOH", "No LOH"),
+                           risk.table.title = "",
+                           ylab = 'PFS Probability'
+                           );cdk_loh.plot
+
+pdf("/Users/boscoll/Desktop/Projects/Anton_RB1/results/PFS.svg", height = 3.2, width = 5)
+print(cdk_loh.plot)   
+dev.off()
+
+
+
+```
+
+```{r Cox}
+cdk1 = cdk1 |> mutate(LOH = factor(LOH, levels = c('No_LOH', 'LOH')))
+summary(coxph(Surv(time.months, pfs.event) ~ LOH, data = cdk1))
+```
+
+```{r OS}
+cdk1 = cdk1 |> mutate(LOH = factor(LOH, levels = c('LOH', 'No_LOH')))
+os.km <- survfit(Surv(time1, time2, os.event) ~ LOH, data = cdk1)
+os.km.plot <- ggsurvplot(os.km,
+                         risk.table= TRUE, tables.height = 0.35,
+                         palette = c("#e95298", "#3db54a"),
+                         tables.theme = theme_cleantable(),
+                         censor = TRUE,
+                         break.time.by = 12,
+                         fontsize = 4,
+                         axes.offset = FALSE,
+                         xlab = "Time (mo)",
+                         legend='none', 
+                         risk.table.title = "",
+                         risk.table.legend = FALSE,
+                         legend.labs = c("LOH", "No LOH"),
+                         ylab = 'OS Probability',
+                         xlim = c(0,86));os.km.plot
+
+pdf("/Users/boscoll/Desktop/Projects/Anton_RB1/results/OS.svg", height = 3.2, width = 5)
+print(os.km.plot)   
+dev.off()
+
+```
+
+```{r OS}
+cdk1 = cdk1 |> mutate(LOH = factor(LOH, levels = c('LOH', 'No_LOH')))
+os.km <- survfit(Surv(time2, os.event) ~ LOH, data = cdk1)
+os.km.plot <- ggsurvplot(os.km,
+                         risk.table= TRUE, tables.height = 0.20,
+                         palette = c("#e95298", "#3db54a"),
+                         tables.theme = theme_cleantable(),
+                         censor = TRUE,
+                         break.time.by = 12,
+                         fontsize = 4,
+                         axes.offset = FALSE,
+                         xlab = "Time (mo)",
+                         legend='none', 
+                         risk.table.title = "",
+                         risk.table.legend = FALSE,
+                         legend.labs = c("LOH", "No LOH"),
+                         xlim = c(0,86));os.km.plot
+
+
+pdf("/Users/boscoll/Desktop/Projects/Anton_RB1/results/OS.pdf", height = 3.5, width = 5)
+print(cdk_loh.plot)   
+dev.off()
+
+
+```
+
+```{r}
+cdk1 = cdk1 |> mutate(LOH = factor(LOH, levels = c('No_LOH', 'LOH')))
+summary(coxph(Surv(time1, time2, os.event) ~ LOH, data = cdk1))
+```
+
