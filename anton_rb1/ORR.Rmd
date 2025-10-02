@@ -1,0 +1,226 @@
+```{r Packages}
+require(tidyverse)
+require(rstatix)
+```
+
+```{r}
+orr = read.csv("~/Desktop/Projects/Anton_RB1/data/response_plot_CDK_vs_PARP_final.csv")
+```
+
+```{r}
+a = orr |> 
+  mutate(ORR = if_else(Best.Response %in% c('CR', 'PR'), 'Response', 'Not-Response')) |> 
+  group_by(Tx.Type) |> 
+  count(ORR) |>
+  mutate(
+    proportion = n / sum(n),
+    ci_lower = if_else(ORR == "Response", 
+                       prop.test(n[ORR == "Response"], sum(n))$conf.int[1], 
+                       NA_real_),
+    ci_upper = if_else(ORR == "Response", 
+                       prop.test(n[ORR == "Response"], sum(n))$conf.int[2], 
+                       NA_real_)
+  ) |> mutate(across(c(proportion:ci_upper), round, 3 )) |> 
+    filter(ORR == 'Response') |> 
+  ggplot(aes(Tx.Type, proportion, col = Tx.Type, fill = Tx.Type)) +
+  geom_col(width = 0.8) + 
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), colour = 'black', width = 0.25) + 
+  geom_text(aes(y = ci_upper, label = scales::percent(proportion, accuracy = 0.1)), 
+            vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("parp" = "#6495ED", 
+                               "cdk"  = "#FF6A6A")) +
+  scale_color_manual(values = c("parp" = "black", 
+                                "cdk"  = "black")) +
+  xlab('') + 
+  ylab(expression(bold('Overall response rate'))) + 
+  theme_classic() + 
+  theme(legend.position = 'none') + 
+  scale_x_discrete(labels = c("cdk" = "CDK4/6i", 
+                              "parp" = "PARP-i")) + 
+  scale_y_continuous(limits = c(0,1), expand = c(0,0))
+
+```
+```{r}
+b = orr |> 
+  mutate(ORR = if_else(Best.Response %in% c('CR', 'PR', 'SD'), 'DCR', 'Not-Response')) |> 
+  group_by(Tx.Type) |> 
+  count(ORR) |>
+  mutate(
+    proportion = n / sum(n),
+    ci_lower = if_else(ORR == "DCR", 
+                       prop.test(n[ORR == "DCR"], sum(n))$conf.int[1], 
+                       NA_real_),
+    ci_upper = if_else(ORR == "DCR", 
+                       prop.test(n[ORR == "DCR"], sum(n))$conf.int[2], 
+                       NA_real_)
+  ) |> mutate(across(c(proportion:ci_upper), round, 3 )) |> 
+    filter(ORR == 'DCR') |> 
+  ggplot(aes(Tx.Type, proportion, col = Tx.Type, fill = Tx.Type)) +
+  geom_col(width = 0.8) + 
+  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), colour = 'black', width = 0.25) + 
+  geom_text(aes(y = ci_upper, label = scales::percent(proportion, accuracy = 0.1)), 
+            vjust = -0.5, size = 4) +
+  scale_fill_manual(values = c("parp" = "#6495ED", 
+                               "cdk"  = "#FF6A6A")) +
+  scale_color_manual(values = c("parp" = "black", 
+                                "cdk"  = "black")) +
+  xlab('') + 
+  ylab(expression(bold('Disease control rate'))) + 
+  theme_classic() + 
+  theme(legend.position = 'none') + 
+  scale_x_discrete(labels = c("cdk" = "CDK4/6i", 
+                              "parp" = "PARP-i")) + 
+  scale_y_continuous(limits = c(0,1), expand = c(0,0))
+```
+
+```{r}
+require(patchwork)
+a + b
+```
+
+
+
+```{r}
+a = orr |> 
+  group_by(Tx.Type, Best.Response) |> 
+  summarise(n = n(), .groups = "drop") |> 
+  group_by(Tx.Type) |> 
+  mutate(percentage = n / sum(n),
+         Best.Response = factor(Best.Response, 
+                                levels = c('PD', 'SD', 'PR', 'CR'))) |> 
+  ggplot(aes(x = Tx.Type, y = percentage, fill = Best.Response)) +
+  geom_col(color = "black", width = 0.6, size = 0.01) +
+ scale_y_continuous(
+  limits = c(0, 1),
+  expand = c(0, 0),
+  labels = scales::percent_format(accuracy = 1)
+) + 
+  scale_fill_manual(values = c(
+    "CR" = "white",
+    "PR" = "#9bc0ce",
+    "SD" = "#6b8690",
+   "PD" = "#394b4a"
+   
+  )) +
+  labs(
+    x = "",
+    y = "Percentage",
+    fill = "Best Response",
+    title = ""
+  ) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.text.x = element_text(face = "bold", size = 10)
+  ) + 
+  scale_x_discrete(labels = c("cdk" = "CDK4/6i", 
+                              "parp" = "PARPi"));a
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/ORR.svg', height = 4.5, width = 5)
+a
+dev.off()
+
+```
+
+
+```{r Ladder plot}
+ladder <- read.csv("~/Desktop/Projects/Anton_RB1/data/set_up_for_barplot_parp_v_cdk.csv")
+ladder=ladder |> mutate(event = if_else(event == 1, 'Yes', 'No')) |> 
+  rename(Progression = event)
+ladder = ladder  |> 
+  group_by(MRN)  |> 
+  mutate(
+    slope = ifelse(diff(time)[1] > 0, "Up", "Down")
+  )  |> 
+  ungroup()
+
+a = ggplot(ladder, aes(x = Tx.Type, y = time)) +
+  geom_boxplot(outlier.shape = NA, fill = "white", color = "black") +
+  geom_point(aes(shape = Progression, color = Progression), size = 3) +
+  geom_line(aes(group = MRN, color = slope), size = 0.4, alpha = 0.8) + # slope coloring
+  scale_shape_manual(values = c("No" = 18, "Yes" = 16)) +
+  scale_color_manual(
+    values = c(
+      "Up" = "#6e91cb",     # blue (line slope up)
+      "Down" = "#f26b6c",   # red (line slope down)
+      "No" = "#32CD32",     # point: progression = No
+      "Yes" = "#394b4a"     # point: progression = Yes
+    )
+  ) +
+  labs(
+    x = "",
+    y = "Time on treatment (months)",
+    shape = "Event",
+    color = "Slope / Event",
+    title = 'Time on treatment, CDK4/6i+ET vs. PARPi'
+  ) +
+  theme_classic(base_size = 14) +
+  theme(axis.line.x = element_blank(),
+  axis.ticks.x = element_blank()) + 
+  scale_y_continuous(expand = c(0,0), limits = c(0,60)) +
+  scale_x_discrete(labels = c("cdk" = "CDK4/6i", "parp" = "PARP-i"));a
+
+# pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/ladderplot.svg', height = 5, width = 5.5)
+# a
+# dev.off()
+
+
+```
+
+```{r ladder v2}
+ladder <- read.csv("~/Desktop/Projects/Anton_RB1/data/set_up_for_barplot_parp_v_cdk.csv")
+
+ladder <- ladder |> 
+  mutate(event = if_else(event == 1, 'Yes', 'No')) |> 
+  rename(Progression = event)
+
+ladder = ladder |> 
+  group_by(MRN) |> 
+  mutate(
+    slope = case_when(
+      time[Tx.Type=="parp"]/time[Tx.Type=="cdk"] < 1 ~ "PFS PARP-i < CDK4/6i+ET",
+      time[Tx.Type=="parp"]/time[Tx.Type=="cdk"] > 1 ~ "PFS PARP-i > CDK4/6i+ET"
+    
+  )) |> 
+  ungroup()
+
+ladder$slope <- factor(
+  ladder$slope, 
+  levels = c("PFS PARP-i > CDK4/6i+ET", "PFS PARP-i < CDK4/6i+ET")
+)
+
+a <- ggplot(ladder, aes(x = Tx.Type, y = time)) +
+  geom_boxplot(outlier.shape = NA, fill = "white", color = "black") +
+  geom_point(aes(shape = Progression, color = Progression), size = 3) +
+  geom_line(aes(group = MRN, color = slope), size = 0.4, alpha = 0.95) + 
+  scale_shape_manual(values = c("No" = 18, "Yes" = 16)) +
+  scale_color_manual(
+    values = c(
+      "PFS PARP-i > CDK4/6i+ET" = "#084594",
+      "PFS PARP-i < CDK4/6i+ET" = "#de2d26",
+      "No" = "#32CD32",
+      "Yes" = "#394b4a"
+    )
+  ) +
+  labs(
+    x = "",
+    y = "Time on treatment (months)",
+    shape = "Event",
+    color = "Slope / Event",
+    title = 'Time on treatment, CDK4/6i+ET vs. PARPi'
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.line.x = element_blank(),
+    axis.ticks.x = element_blank()
+  ) + 
+  scale_y_continuous(expand = c(0,0), limits = c(0,60)) +
+  scale_x_discrete(labels = c("cdk" = "CDK4/6i", "parp" = "PARP-i"));a
+
+# pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/ladderplot.svg', height = 5, width = 7)
+# a
+# dev.off()
+```
+
+
+
