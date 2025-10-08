@@ -1,4 +1,4 @@
-```{r}
+```{r Packages}
 require(tidyverse)
 require(ggrepel)
 require(patchwork)
@@ -140,7 +140,7 @@ atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Signific
 
 
 
-sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_ATM_all_bi.csv")
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_ATM_all_uni.csv")
 sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
 sm.log.results.c=sm.log.results.c |> 
   mutate(
@@ -1916,7 +1916,7 @@ dev.off()
 
 ```{r brca2 er}
 
-sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_all.csv")
+sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_er.csv")
 sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)
 sm.log.results.c=sm.log.results.c |> 
   mutate(
@@ -1951,7 +1951,7 @@ atm_all = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Signifi
                      breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
                      #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
                      )+
-  scale_y_continuous(limits = c(0, 8), 
+  scale_y_continuous(limits = c(0, 8.1), 
                      breaks = seq(1, 8, 1)
                     ) +
   xlab(expression(log[2]('Odds ratio'))) +
@@ -2019,7 +2019,7 @@ atm_bi = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Signific
                      breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
                      #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
                      )+
-  scale_y_continuous(limits = c(0, 8), 
+  scale_y_continuous(limits = c(0, 8.1), 
                      breaks = seq(1, 8, 1)
                     ) +
   xlab(expression(log[2]('Odds ratio'))) +
@@ -2085,7 +2085,7 @@ atm_uni = ggplot(sig.label.atm, aes(x=log2OR, y=-log10(q.value), color = Signifi
                      breaks = c(-4, -3, -2, -1, 0, 1, 2, 3, 4)
                      #labels = c("0.06", "0.25", "0.5", "1", "2", "4", "8")) +
                      )+
-  scale_y_continuous(limits = c(0, 8), 
+  scale_y_continuous(limits = c(0, 8.1), 
                      breaks = seq(1, 8, 1)
                     ) +
   xlab(expression(log[2]('Odds ratio'))) +
@@ -2324,7 +2324,7 @@ dev.off()
 ```
 
 
-```{r brca2 er}
+```{r brca2 tnbc}
 
 sm.log.results.c <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/Supplementary/logistic_regression_results_for_bubble_plot/LR_results_BRCA2_tn.csv")
 sm.log.results.c = sm.log.results.c |> rename(Somatic.Mutation = Somatic.Variant)

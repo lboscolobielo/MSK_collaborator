@@ -108,3 +108,35 @@ cdk1 = cdk1 |> mutate(LOH = factor(LOH, levels = c('No_LOH', 'LOH')))
 summary(coxph(Surv(time1, time2, os.event) ~ LOH, data = cdk1))
 ```
 
+
+```{r KMs figure 2}
+cdk1 <- read.csv("/Users/boscoll/Desktop/Projects/Anton_RB1/data/KMs/CDK_B2_outcomes_PFS_final.csv")
+# cdk1 = cdk1 |> mutate(LOH = factor(LOH, levels = c('LOH', 'No_LOH')))
+cdk_km_loh <- survfit(Surv(time.months, event) ~ b2, data = cdk1)
+coxph(Surv(time.months, event) ~ b2, data = cdk1)
+cdk_loh.plot <- ggsurvplot(cdk_km_loh,
+                           risk.table= TRUE, 
+                           tables.height = 0.35,
+                           tables.theme = theme_cleantable(),
+                           censor = TRUE,
+                           palette = c("#00ac5d","#e95298"),
+                           break.time.by = 6,
+                           fontsize = 3,
+                           axes.offset = FALSE,
+                           xlab = "Time (mo)",
+                           xlim = c(0,79.5),
+                           legend='none', 
+                           risk.table.legend = FALSE,
+                           legend.labs = c("WT", "gBRCA2"),
+                           risk.table.title = "",
+                           ylab = 'PFS Probability'
+                           );cdk_loh.plot
+pdf("/Users/boscoll/Desktop/Projects/Anton_RB1/results/KMs_figure2.svg", height = 5, width = 5.7)
+print(cdk_loh.plot)   
+dev.off()
+```
+
+```{r}
+summary(coxph(Surv(time.months, event) ~ b2 + ET_partner, data = cdk1))
+```
+
