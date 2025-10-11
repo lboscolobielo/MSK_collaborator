@@ -1,0 +1,47 @@
+```{r Packages}
+require(tidyverse)
+require(rstatix)
+```
+
+
+```{r}
+df = read.csv("~/Desktop/Projects/Anton_RB1/data/Supp.1B.csv")
+
+```
+
+```{r}
+loh_freq <- df %>% group_by(Hugo_Symbol, loh) %>% summarize(n = n()) %>% mutate(freq = n/sum(n))
+loh_freq <- loh_freq %>% mutate(loh = factor(loh, levels = c("Indeterminate", "Heterozygous", "Second_Hit_Mut", "Loss_Ref", "LOH_CN")))
+loh_plot <- ggplot(loh_freq, aes(x = Hugo_Symbol, fill = loh, group = loh)) +
+  geom_bar(aes(y = freq), color = 'black', linewidth  = 0.1, stat = "identity", position = "fill") +
+  scale_fill_brewer(palette = "PuBu", direction = 1) +
+  ggtitle("Zygosity status of germline pathogenic variants") +
+  xlab("") + ylab("Frequency") + 
+  theme_bw() + 
+   scale_y_continuous(
+  limits = c(0, 1),
+  expand = c(0, 0),
+  labels = scales::percent_format(accuracy = 1)
+) +
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.line = element_line(colour = "black"), 
+        legend.position = "right", 
+        legend.title = element_blank(), 
+        plot.title = element_text(face = "bold", 
+                                  size = 10, 
+                                  hjust = 0.5, 
+                                  margin = margin(t = 20, b = 20)
+                                  ));loh_plot
+
+
+
+pdf('/Users/boscoll/Desktop/Projects/Anton_RB1/results/Supp_S2.pdf', height = 4, width = 6)
+loh_plot
+dev.off()
+
+
+
+```
+
